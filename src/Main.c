@@ -113,12 +113,7 @@ Vector displays;
 void Setup(AlxWindow* w){
     displays = Vector_New(sizeof(EDisplay));
 
-    //Vector_Push(&displays,(EDisplay[]){ EDisplay_New(200.0f,  0.0f, 1100.0f, 625.0f,INPUT_MAXLENGTH,16,SYNTAX_C,"./Saved.c") });
     Vector_Push(&displays,(EDisplay[]){ EDisplay_New(0.0f,0.0f,1100.0f,625.0f,INPUT_MAXLENGTH,ALXFONT_PATHS_HIGH,32,64,SYNTAX_C,"./src/Main.c") });
-    //Vector_Push(&displays,(EDisplay[]){ EDisplay_New(200.0f,  625.0f,1100.0f, 625.0f,INPUT_MAXLENGTH,16,SYNTAX_C,"./Files/Main.c") });
-    //Vector_Push(&displays,(EDisplay[]){ EDisplay_New(1300.0f, 625.0f,1100.0f, 625.0f,INPUT_MAXLENGTH,16,SYNTAX_C,"./Files/File.txt") });
-
-    Setup_ByInit(&displays);
 }
 void Update(AlxWindow* w){
     for(int i = 0;i<displays.size;i++){
