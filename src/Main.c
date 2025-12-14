@@ -59,6 +59,10 @@ void EDisplay_Update(EDisplay* e,States* strokes,Vec2 Mouse){
             else if(we < e->DistMaxX)                       e->Side = EDISPLAY_SIDE_WEST;
             else if(ea < e->DistMaxX)                       e->Side = EDISPLAY_SIDE_EAST;
         }
+        
+        if(Input_Stroke(&e->Field.In,ALX_KEY_CTRL).DOWN && Input_Stroke(&e->Field.In,ALX_KEY_SHIFT).PRESSED){
+            e->IntellisenseOpen = !e->IntellisenseOpen;
+        }
 
         if(e->Side!=EDISPLAY_SIDE_NONE){
             if(e->Side == EDISPLAY_SIDE_NORTH){
@@ -101,7 +105,21 @@ void EDisplay_Update(EDisplay* e,States* strokes,Vec2 Mouse){
     e->Field.r.p.y = F32_Clamp(e->Field.r.p.y,0.0f,GetHeight() - e->Field.r.d.y);
 }
 void EDisplay_Render(unsigned int* Target,int Target_Width,int Target_Height,EDisplay* e){
-    TextBox_Render(WINDOW_STD_ARGS,&e->Field);
+    TextBox_Render(Target,Target_Width,Target_Height,&e->Field);
+
+    if(e->IntellisenseOpen){
+        int CurserX = Input_CurserX(&e->Field.In,e->Field.In.Curser);
+        int CurserY = Input_CurserY(&e->Field.In,e->Field.In.Curser);
+        int posx = e->Field.r.p.x+(CurserX + e->Field.ScrollX) *  e->Field.AlxFont.CharSizeX - e->Field.AlxFont.CharSizeX;
+        int posy = e->Field.r.p.y+(CurserY + e->Field.ScrollY) * (e->Field.AlxFont.CharSizeY * INPUT_GAP_FAKTOR) + e->Field.AlxFont.CharSizeY;
+        int boxw = 100;
+        int boxh = 100;
+        
+        posx = F32_Clamp(posx,e->Field.r.p.x,e->Field.r.p.x + e->Field.r.d.x - boxw);
+        posx = F32_Clamp(posx,e->Field.r.p.x,e->Field.r.p.y + e->Field.r.d.y - boxh);
+        Rect_RenderXX(Target,Target_Width,Target_Height,posx,posy,boxw,boxh,BLACK);
+        Rect_RenderXXWire(Target,Target_Width,Target_Height,posx,posy,boxw,boxh,WHITE,1.0f);
+    }
 }
 void EDisplay_Free(EDisplay* d){
     TextBox_Free(&d->Field);
@@ -113,7 +131,7 @@ Vector displays;
 void Setup(AlxWindow* w){
     displays = Vector_New(sizeof(EDisplay));
 
-    Vector_Push(&displays,(EDisplay[]){ EDisplay_New(0.0f,0.0f,1100.0f,625.0f,INPUT_MAXLENGTH,ALXFONT_PATHS_HIGH,32,64,SYNTAX_C,"./src/Main.c") });
+    Vector_Push(&displays,(EDisplay[]){ EDisplay_New(10.0f,10.0f,GetWidth() - 20.0f,GetHeight() - 20.0f,INPUT_MAXLENGTH,ALXFONT_PATHS_HIGH,32,64,SYNTAX_C,"./src/Main.c") });
 }
 void Update(AlxWindow* w){
     for(int i = 0;i<displays.size;i++){
@@ -133,7 +151,7 @@ void Delete(AlxWindow* w){
 }
 
 int main(int argc,char** argv){
-    if(Create("IDE",2400,1300,1,1,Setup,Update,Delete))
+    if(Create("IDE - New",2000,1200,1,1,Setup,Update,Delete))
         Start();
     return 0;
 }
