@@ -136,17 +136,35 @@ void EDisplay_Free(EDisplay* d){
 #include "/home/codeleaded/System/Static/Library/WindowEngine1.0.h"
 #include "/home/codeleaded/System/Static/Library/FileChooser.h"
 
+#define FILE_WIDTH      150
+
 Scene scene;
 ComponentPack cg;
 ComponentML cml;
 CStr fileinBuffer;
 CVector filesOpen;
 
+Textbox* IDE_GetTB(){
+    Node* selected = scene.First->Next->Next;
+    return (Textbox*)selected->Memory;
+}
+
 void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        CStr text = String_CStr(&b->text);
-        printf("%s -> L\n",text);
-        CStr_Free(&text);
+        const int index = (int)((b->renderable.rect.p.x + 1.0f - 100.0f) / FILE_WIDTH);
+        CStr path = *(CStr*)CVector_Get(&filesOpen,index);
+        
+        Textbox* tb = IDE_GetTB();
+        if(tb){
+            CStr content = Files_ReadT(path);
+            if(content){
+                Input_SetText(&tb->In,content);
+                CStr_Set(&fileinBuffer,path);
+                CStr_Free(&content);
+            }else{
+                printf("[IDE]: File -> %s(%d) not found!\n",path,index);
+            }
+        }
     }
 }
 void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
@@ -158,17 +176,18 @@ void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
         CStr_Set(&fileinBuffer,fc);
         CVector_Push(&filesOpen,(CStr[]){ CStr_Cpy(fileinBuffer) });
 
+        CVector_Print(&filesOpen);
+
         printf("Choosen: '%s'\n",fileinBuffer);
 
         CStr name = Files_NameFull(fileinBuffer);
         const int count = scene.size - 3;
-        const int width = 150;
         Scene_Add(&scene,(Button[]){ Button_NewStd(
             NULL,
             name,
             (void(*)(void*,Label*,LabelEvent*))Button_File_EventHandler,
             (Vec2){ 16,16 },
-            (Rect){ 100 + count * width,0.0f,width,20.0f },
+            (Rect){ 100 + count * FILE_WIDTH,0.0f,FILE_WIDTH,20.0f },
             0xFF000044,
             0xFFAAAAAA
             )},sizeof(Button)
@@ -180,8 +199,10 @@ void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
 }
 void Button_Save_EventHandler(Button* b,Component* c,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        TextBox* tb = Component_Scene_FindNR(&cg,"buffer");
-        Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
+        if(fileinBuffer){
+            Textbox* tb = IDE_GetTB();
+            if(tb) Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
+        }
     }
 }
 

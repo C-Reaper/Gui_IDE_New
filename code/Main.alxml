@@ -5,5 +5,7 @@ COMMENT
 <Pack>
     <Button name="open" content="Open" x="0" y="0" w="50" h="20" fontX="8" fontY="16" Fg="0xFFFFFFFF" Bg="0xFF000055" func=""></Button>
     <Button name="save" content="Save" x="50" y="0" w="50" h="20" fontX="8" fontY="16" Fg="0xFFFFFFFF" Bg="0xFF005500" func=""></Button>
-    <Text name="buffer" content="" x="10" y="30" w="1880" h="960" fontX="16" fontY="32" Fg="0xFFFFFFFF" Bg="0xFF333333"></Text>
+    <Text name="buffer" content="type here" x="10" y="30" w="1880" h="960" fontX="16" fontY="32" Fg="0xFFFFFFFF" Bg="0xFF333333"></Text>
 </Pack>
+
+
