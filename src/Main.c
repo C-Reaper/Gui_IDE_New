@@ -180,7 +180,8 @@ void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
 }
 void Button_Save_EventHandler(Button* b,Component* c,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        printf("Save\n");
+        TextBox* tb = Component_Scene_FindNR(&cg,"buffer");
+        Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
     }
 }
 
