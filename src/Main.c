@@ -136,7 +136,17 @@ void EDisplay_Free(EDisplay* d){
 #include "/home/codeleaded/System/Static/Library/WindowEngine1.0.h"
 #include "/home/codeleaded/System/Static/Library/FileChooser.h"
 
-#define FILE_WIDTH      150
+#define FILE_WIDTH              150
+
+#define FILE_SYNTAX_C           "/home/codeleaded/System/SyntaxFiles/C_Syntax.alxon"
+#define FILE_SYNTAX_CPP         "/home/codeleaded/System/SyntaxFiles/Cpp_Syntax.alxon"
+#define FILE_SYNTAX_LL          "/home/codeleaded/System/SyntaxFiles/LuaLike_Syntax.alxon"
+#define FILE_SYNTAX_VBL         "/home/codeleaded/System/SyntaxFiles/VBLike_Syntax.alxon"
+#define FILE_SYNTAX_AIX         "/home/codeleaded/System/SyntaxFiles/Aix_Syntax.alxon"
+#define FILE_SYNTAX_ALX         "/home/codeleaded/System/SyntaxFiles/Alx_Syntax.alxon"
+#define FILE_SYNTAX_OMML        "/home/codeleaded/System/SyntaxFiles/OMML_Syntax.alxon"
+
+
 
 Scene scene;
 ComponentPack cg;
@@ -144,7 +154,7 @@ ComponentML cml;
 CStr fileinBuffer;
 CVector filesOpen;
 
-Editor* IDE_GetTB(){
+Editor* IDE_GetText(){
     Node* selected = scene.First->Next->Next;
     return (Editor*)selected->Memory;
 }
@@ -154,13 +164,26 @@ void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
         const int index = (int)((b->renderable.rect.p.x + 1.0f - 100.0f) / FILE_WIDTH);
         CStr path = *(CStr*)CVector_Get(&filesOpen,index);
         
-        Editor* tb = IDE_GetTB();
+        Editor* tb = IDE_GetText();
         if(tb){
             CStr content = Files_ReadT(path);
             if(content){
                 Input_SetText(&tb->In,content);
                 CStr_Set(&fileinBuffer,path);
                 CStr_Free(&content);
+
+                CStr type = Files_Type(path);
+                
+                if(CStr_Cmp(type,"c") || CStr_Cmp(type,"h"))            Editor_Syntax(tb,FILE_SYNTAX_C);
+                else if(CStr_Cmp(type,"cpp") || CStr_Cmp(type,"hpp"))   Editor_Syntax(tb,FILE_SYNTAX_CPP);
+                else if(CStr_Cmp(type,"ll"))                            Editor_Syntax(tb,FILE_SYNTAX_LL);
+                else if(CStr_Cmp(type,"vbl"))                           Editor_Syntax(tb,FILE_SYNTAX_VBL);
+                else if(CStr_Cmp(type,"aix"))                           Editor_Syntax(tb,FILE_SYNTAX_AIX);
+                else if(CStr_Cmp(type,"alx"))                           Editor_Syntax(tb,FILE_SYNTAX_ALX);
+                else if(CStr_Cmp(type,"omml"))                          Editor_Syntax(tb,FILE_SYNTAX_OMML);
+                else                                                    Editor_Syntax(tb,NULL);
+                
+                CStr_Free(&type);
             }else{
                 printf("[IDE]: File -> %s(%d) not found!\n",path,index);
             }
@@ -202,7 +225,7 @@ void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
 void Button_Save_EventHandler(Button* b,Component* c,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
         if(fileinBuffer){
-            Editor* tb = IDE_GetTB();
+            Editor* tb = IDE_GetText();
             if(tb) Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
         }
     }
