@@ -135,6 +135,7 @@ void EDisplay_Free(EDisplay* d){
 #include "/home/codeleaded/System/Static/Library/ComponentDefines.h"
 #include "/home/codeleaded/System/Static/Library/WindowEngine1.0.h"
 #include "/home/codeleaded/System/Static/Library/FileChooser.h"
+#include "/home/codeleaded/System/Static/Library/MenuSystem.h"
 
 #define FILE_WIDTH              150
 
@@ -147,6 +148,8 @@ void EDisplay_Free(EDisplay* d){
 #define FILE_SYNTAX_OMML        "/home/codeleaded/System/SyntaxFiles/OMML_Syntax.alxon"
 
 
+MenuSystem menu;
+MenuOption* selected;
 
 Scene scene;
 ComponentPack cg;
@@ -161,7 +164,7 @@ Editor* IDE_GetText(){
 
 void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        const int index = (int)((b->renderable.rect.p.x + 1.0f - 100.0f) / FILE_WIDTH);
+        const int index = (int)((b->renderable.rect.p.x + 1.0f - 10.0f) / FILE_WIDTH);
         CStr path = *(CStr*)CVector_Get(&filesOpen,index);
         
         Editor* tb = IDE_GetText();
@@ -190,56 +193,12 @@ void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
         }
     }
 }
-void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
-    if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        FileChooser fc = FileChooser_New("","/home/codeleaded/Hecke/C/Gui_IDE_New/code",(NameTypePair[]){
-            NameTypePair_New("All Files","*.*"),
-            NameTypePair_Null()
-        });
-        CStr_Set(&fileinBuffer,fc);
-        CVector_Push(&filesOpen,(CStr[]){ CStr_Cpy(fileinBuffer) });
-
-        CVector_Print(&filesOpen);
-
-        printf("Choosen: '%s'\n",fileinBuffer);
-
-        CStr name = Files_NameFull(fileinBuffer);
-        const int count = scene.size - 3;
-        Scene_Add(&scene,(Button[]){ Button_New(
-            NULL,
-            name,
-            (void(*)(void*,Label*,LabelEvent*))Button_File_EventHandler,
-            AlxFont_MAKE_HIGH(8,16),
-            (Vec2){ 8,16 },
-            (Rect){ 100 + count * FILE_WIDTH,0.0f,FILE_WIDTH,20.0f },
-            ALIGN_HORI_CENTER | ALIGN_VERT_CENTER,
-            0xFF000044,
-            0xFFFFFFFF
-            )},sizeof(Button)
-        );
-
-        CStr_Free(&name);
-        FileChooser_Free(&fc);
-    }
-}
-void Button_Save_EventHandler(Button* b,Component* c,ButtonEvent* e){
-    if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        if(fileinBuffer){
-            Editor* tb = IDE_GetText();
-            if(tb) Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
-        }
-    }
-}
-
 void Std_EventHandler(void* parent,void* r,EventId* e){
     Scene* s = (Scene*)parent;
     Renderable* ra = (Renderable*)r;
     Component* c = Component_Scene_FindRR(&cg,ra);
 
     if(c){
-        if(CStr_Cmp(c->name,"open")) Button_Open_EventHandler((Button*)ra,c,(ButtonEvent*)e);
-        if(CStr_Cmp(c->name,"save")) Button_Save_EventHandler((Button*)ra,c,(ButtonEvent*)e);
-
         //Component_Print(&cg);
         //Scene_Print(&scene);
     }
@@ -367,20 +326,104 @@ void Setup(AlxWindow* w){
     Component_Scene_Push_R(&cg,&scene);
     Component_Scene_Event_R(&cg,&scene,Std_EventHandler);
 
+    menu = MenuSystem_New(
+		"./assets/Pointer.png",
+		"./assets/Fold.png",
+		"./assets/FoldUp.png",
+		"./assets/FoldDown.png",
+		"./assets/Rainbow_Atlas.png",
+		32,0.5f
+	);
+
+	MenuSystem_Set(&menu,0,(int[]){   },	MenuOption_New(0,"root","NONE",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(1,"open","open a file",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(2,"save","save current file",NULL,NULL));
+	//MenuSystem_Add(&menu,1,(int[]){ 0 },	MenuOption_New(5,"x","0.0",&rect.p.x,(char *(*)(void*))Float_CStr));
+	MenuSystem_Step(&menu);
+	selected = NULL;
+
     fileinBuffer = NULL;
     filesOpen = CVector_New(sizeof(CStr),(void*)CStr_Free,NULL,(void*)CStr_PCmp,(void*)CStr_print);
 }
 void Update(AlxWindow* w){
-    Scene_Update(&scene,window.Strokes,GetMouse(),GetMouseBefore());
+    if(Stroke(ALX_KEY_ESC).PRESSED){
+        if(menu.trace.size == 0)    MenuSystem_Step(&menu); 
+        else                        MenuSystem_Clear(&menu);
+    }
+
+    if(menu.trace.size == 0)
+        Scene_Update(&scene,window.Strokes,GetMouse(),GetMouseBefore());
+    else{
+        if(Stroke(ALX_KEY_ENTER).PRESSED){
+	    	selected = MenuSystem_Select(&menu);
+            
+            if(CStr_Cmp(selected->text,"open")){
+                FileChooser fc = FileChooser_New("","/home/codeleaded/Hecke/C/Gui_IDE_New/code",(NameTypePair[]){
+                    NameTypePair_New("All Files","*.*"),
+                    NameTypePair_Null()
+                });
+                CStr_Set(&fileinBuffer,fc);
+                CVector_Push(&filesOpen,(CStr[]){ CStr_Cpy(fileinBuffer) });
+            
+                CVector_Print(&filesOpen);
+            
+                printf("Choosen: '%s'\n",fileinBuffer);
+            
+                CStr name = Files_NameFull(fileinBuffer);
+                const int count = scene.size - 1;
+                Scene_Add(&scene,(Button[]){ Button_New(
+                    NULL,
+                    name,
+                    (void(*)(void*,Label*,LabelEvent*))Button_File_EventHandler,
+                    AlxFont_MAKE_HIGH(8,16),
+                    (Vec2){ 8,16 },
+                    (Rect){ 10.0f + count * FILE_WIDTH,0.0f,FILE_WIDTH,20.0f },
+                    ALIGN_BORDER,
+                    0xFF444444,
+                    0xFFFFFFFF
+                    )},sizeof(Button)
+                );
+            
+                CStr_Free(&name);
+                FileChooser_Free(&fc);
+            }
+            if(CStr_Cmp(selected->text,"save")){
+                if(fileinBuffer){
+                    Editor* tb = IDE_GetText();
+                    if(tb) Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
+                }
+            }
+	    }
+	    if(Stroke(ALX_KEY_SPACE).PRESSED){
+	    	MenuSystem_Deactivate(&menu,&menu.trace);
+	    }
+
+        if(Stroke(ALX_KEY_UP).PRESSED){
+	    	MenuSystem_Up(&menu);
+	    }
+	    if(Stroke(ALX_KEY_DOWN).PRESSED){
+	    	MenuSystem_Down(&menu);
+	    }
+	    if(Stroke(ALX_KEY_LEFT).PRESSED){
+	    	MenuSystem_Left(&menu);
+	    }
+	    if(Stroke(ALX_KEY_RIGHT).PRESSED){
+	    	MenuSystem_Right(&menu);
+	    }
+    }
+
+	MenuSystem_Update(&menu);
 
 	Clear(BLACK);
 
 	Scene_Render(WINDOW_STD_ARGS,&scene);
+    MenuSystem_Render(WINDOW_STD_ARGS,&menu,50.0f,50.0f);
 }
 void Delete(AlxWindow* w){
 	Scene_Free(&scene);
     Component_Free(&cg);
     ComponentML_Free(&cml);
+    MenuSystem_Free(&menu);
 
     CStr_Free(&fileinBuffer);
     CVector_Free(&filesOpen);
