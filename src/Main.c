@@ -17,7 +17,7 @@
 #define EDISPLAY_SIDE_SOUTHEAST     8
 
 typedef struct EDisplay {
-    TextBox Field;
+    Editor Field;
     String File;
     float DistMaxX;
     float DistMaxY;
@@ -28,9 +28,9 @@ typedef struct EDisplay {
 
 EDisplay EDisplay_New(float x,float y,float w,float h,int Lines,char *Path, int Columns, int Rows, int CharSizeX, int CharSizeY, int AlxFontSizeX, int AlxFontSizeY,char* Syntax,char* File){
     EDisplay d;
-    d.Field = TextBox_New(Input_New(INPUT_MAXLENGTH,Lines),(Rect){ { x,y },{ w,h } },Path,Columns,Rows,CharSizeX,CharSizeY,AlxFontSizeX,AlxFontSizeY,BLACK);
+    d.Field = Editor_New(Input_New(INPUT_MAXLENGTH,Lines),(Rect){ { x,y },{ w,h } },Path,Columns,Rows,CharSizeX,CharSizeY,AlxFontSizeX,AlxFontSizeY,BLACK);
     //Input_SetText(&d.Field.In,"");
-    TextBox_SetSyntax(&d.Field,Syntax);
+    Editor_SetSyntax(&d.Field,Syntax);
     d.File = String_Make(File);
 
     d.DistMaxX = 5.0f;
@@ -42,7 +42,7 @@ EDisplay EDisplay_New(float x,float y,float w,float h,int Lines,char *Path, int 
     return d;
 }
 void EDisplay_Update(EDisplay* e,States* strokes,Vec2 Mouse){
-    TextBox_Update(&e->Field,strokes,GetMouse());
+    Editor_Update(&e->Field,strokes,GetMouse());
     
     if(e->Field.In.Enabled){
         if(Input_Stroke(&e->Field.In,ALX_MOUSE_L).PRESSED){
@@ -106,7 +106,7 @@ void EDisplay_Update(EDisplay* e,States* strokes,Vec2 Mouse){
     e->Field.r.p.y = F32_Clamp(e->Field.r.p.y,0.0f,GetHeight() - e->Field.r.d.y);
 }
 void EDisplay_Render(unsigned int* Target,int Target_Width,int Target_Height,EDisplay* e){
-    TextBox_Render(Target,Target_Width,Target_Height,&e->Field);
+    Editor_Render(Target,Target_Width,Target_Height,&e->Field);
 
     if(e->IntellisenseOpen){
         int CurserX = Input_CurserX(&e->Field.In,e->Field.In.Curser);
@@ -123,7 +123,7 @@ void EDisplay_Render(unsigned int* Target,int Target_Width,int Target_Height,EDi
     }
 }
 void EDisplay_Free(EDisplay* d){
-    TextBox_Free(&d->Field);
+    Editor_Free(&d->Field);
 }
 
 */
@@ -144,9 +144,9 @@ ComponentML cml;
 CStr fileinBuffer;
 CVector filesOpen;
 
-Textbox* IDE_GetTB(){
+Editor* IDE_GetTB(){
     Node* selected = scene.First->Next->Next;
-    return (Textbox*)selected->Memory;
+    return (Editor*)selected->Memory;
 }
 
 void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
@@ -154,7 +154,7 @@ void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
         const int index = (int)((b->renderable.rect.p.x + 1.0f - 100.0f) / FILE_WIDTH);
         CStr path = *(CStr*)CVector_Get(&filesOpen,index);
         
-        Textbox* tb = IDE_GetTB();
+        Editor* tb = IDE_GetTB();
         if(tb){
             CStr content = Files_ReadT(path);
             if(content){
@@ -182,14 +182,16 @@ void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
 
         CStr name = Files_NameFull(fileinBuffer);
         const int count = scene.size - 3;
-        Scene_Add(&scene,(Button[]){ Button_NewStd(
+        Scene_Add(&scene,(Button[]){ Button_New(
             NULL,
             name,
             (void(*)(void*,Label*,LabelEvent*))Button_File_EventHandler,
-            (Vec2){ 16,16 },
+            AlxFont_MAKE_HIGH(8,16),
+            (Vec2){ 8,16 },
             (Rect){ 100 + count * FILE_WIDTH,0.0f,FILE_WIDTH,20.0f },
+            ALIGN_HORI_CENTER | ALIGN_VERT_CENTER,
             0xFF000044,
-            0xFFAAAAAA
+            0xFFFFFFFF
             )},sizeof(Button)
         );
 
@@ -200,7 +202,7 @@ void Button_Open_EventHandler(Button* b,Component* c,ButtonEvent* e){
 void Button_Save_EventHandler(Button* b,Component* c,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
         if(fileinBuffer){
-            Textbox* tb = IDE_GetTB();
+            Editor* tb = IDE_GetTB();
             if(tb) Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
         }
     }
@@ -383,7 +385,7 @@ typedef struct EDisplay {
     char ShowLines;
     char IntellisenseOpen;
     String File;
-    TextBox Field;
+    Editor Field;
 } EDisplay;
 
 EDisplay EDisplay_New(float x,float y,float w,float h,int Lines,int FontSize,char* Syntax,char* File){
@@ -391,19 +393,19 @@ EDisplay EDisplay_New(float x,float y,float w,float h,int Lines,int FontSize,cha
     d.ShowLines = FALSE;
     d.IntellisenseOpen = FALSE;
     d.File = String_Make(File);
-    d.Field = TextBox_New(Input_New(INPUT_MAXLENGTH,Lines),(Rect){ { x,y },{ w,h } },FONT_PATHS_YANIS,FontSize,FontSize,BLACK);
+    d.Field = Editor_New(Input_New(INPUT_MAXLENGTH,Lines),(Rect){ { x,y },{ w,h } },FONT_PATHS_YANIS,FontSize,FontSize,BLACK);
     //Input_SetText(&d.Field.In,"");
-    TextBox_SetSyntax(&d.Field,Syntax);
+    Editor_SetSyntax(&d.Field,Syntax);
     return d;
 }
 void EDisplay_Update(EDisplay* e,Vec2 Mouse){
-    TextBox_Update(&e->Field,GetMouse());
+    Editor_Update(&e->Field,GetMouse());
 }
 void EDisplay_Render(unsigned int* Target,int Target_Width,int Target_Height,EDisplay* e){
-    TextBox_Render(WINDOW_STD_ARGS,&e->Field);
+    Editor_Render(WINDOW_STD_ARGS,&e->Field);
 }
 void EDisplay_Free(EDisplay* d){
-    TextBox_Free(&d->Field);
+    Editor_Free(&d->Field);
 }
 
 
