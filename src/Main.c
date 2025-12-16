@@ -361,8 +361,6 @@ void Delete(AlxWindow* w){
     CVector_Free(&filesOpen);
 }
 
-
-
 int main(int argc,char** argv){
     if(Create("IDE - New",1900,1000,1,1,Setup,Update,Delete))
         Start();
