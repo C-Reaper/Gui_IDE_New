@@ -349,8 +349,16 @@ void Setup(AlxWindow* w){
 	);
 
 	MenuSystem_Set(&menu,0,(int[]){   },	MenuOption_New(0,"root","NONE",NULL,NULL));
-	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(1,"open","open a file",NULL,NULL));
-	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(2,"save","save current file",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(1,"file","(file)",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(2,"edit","(edit)",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(3,"selection","(selection)",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(4,"view","(view)",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(5,"run","(run)",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(6,"terminal","(terminal)",NULL,NULL));
+	MenuSystem_Add(&menu,0,(int[]){   },	MenuOption_New(7,"help","(help)",NULL,NULL));
+
+	MenuSystem_Add(&menu,1,(int[]){ 0 },	MenuOption_New(8,"open","open a file",NULL,NULL));
+	MenuSystem_Add(&menu,1,(int[]){ 0 },	MenuOption_New(9,"save","save current file",NULL,NULL));
 	//MenuSystem_Add(&menu,1,(int[]){ 0 },	MenuOption_New(5,"x","0.0",&rect.p.x,(char *(*)(void*))Float_CStr));
 	MenuSystem_Step(&menu);
 	selected = NULL;
