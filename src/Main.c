@@ -344,8 +344,8 @@ void Setup(AlxWindow* w){
 		"./assets/Fold.png",
 		"./assets/FoldUp.png",
 		"./assets/FoldDown.png",
-		"./assets/Rainbow_Atlas.png",
-		32,0.5f
+		"./assets/Gray_Atlas.png",
+		0xFF333333,32,0.5f
 	);
 
 	MenuSystem_Set(&menu,0,(int[]){   },	MenuOption_New(0,"root","NONE",NULL,NULL));
