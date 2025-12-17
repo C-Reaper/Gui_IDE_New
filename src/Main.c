@@ -18,7 +18,7 @@
 #define FILE_SYNTAX_AIX         "/home/codeleaded/System/SyntaxFiles/Aix_Syntax.alxon"
 #define FILE_SYNTAX_ALX         "/home/codeleaded/System/SyntaxFiles/Alx_Syntax.alxon"
 #define FILE_SYNTAX_OMML        "/home/codeleaded/System/SyntaxFiles/OMML_Syntax.alxon"
-
+#define FILE_STARTPATH          "/home/codeleaded/Hecke/C/Gui_IDE_New/code"
 
 MenuSystem menu;
 MenuOption* preselected;
@@ -91,34 +91,36 @@ void IDE_ExecuteSelect(){
     if(!selected) return;
     
     if(CStr_Cmp(selected->text,"open")){
-        FileChooser fc = FileChooser_New("","/home/codeleaded/Hecke/C/Gui_IDE_New/code",(NameTypePair[]){
+        FileChooser fc = FileChooser_New("",FILE_STARTPATH,(NameTypePair[]){
             NameTypePair_New("All Files","*.*"),
             NameTypePair_Null()
         });
-        CStr_Set(&fileinBuffer,fc);
-        CVector_Push(&filesOpen,(CStr[]){ CStr_Cpy(fileinBuffer) });
-    
-        CVector_Print(&filesOpen);
-    
-        printf("Choosen: '%s'\n",fileinBuffer);
-    
-        CStr name = Files_NameFull(fileinBuffer);
-        const int count = scene.size - FILE_OTHERRENDERS;
-        Scene_Add(&scene,(Button[]){ Button_New(
-            NULL,
-            name,
-            (void(*)(void*,Label*,LabelEvent*))IDE_File_EventHandler,
-            AlxFont_MAKE_HIGH(8,16),
-            (Vec2){ 8,16 },
-            (Rect){ 10.0f + count * FILE_WIDTH,0.0f,FILE_WIDTH - FILE_PADDINGX,20.0f },
-            ALIGN_BORDER,
-            0xFF444444,
-            0xFFFFFFFF
-            )},sizeof(Button)
-        );
-    
-        CStr_Free(&name);
-        FileChooser_Free(&fc);
+        if(fc){
+            CStr_Set(&fileinBuffer,fc);
+            CVector_Push(&filesOpen,(CStr[]){ CStr_Cpy(fileinBuffer) });
+            
+            CVector_Print(&filesOpen);
+            
+            printf("Choosen: '%s'\n",fileinBuffer);
+            
+            CStr name = Files_NameFull(fileinBuffer);
+            const int count = scene.size - FILE_OTHERRENDERS;
+            Scene_Add(&scene,(Button[]){ Button_New(
+                NULL,
+                name,
+                (void(*)(void*,Label*,LabelEvent*))IDE_File_EventHandler,
+                AlxFont_MAKE_HIGH(8,16),
+                (Vec2){ 8,16 },
+                (Rect){ 10.0f + count * FILE_WIDTH,0.0f,FILE_WIDTH - FILE_PADDINGX,20.0f },
+                ALIGN_BORDER,
+                0xFF444444,
+                0xFFFFFFFF
+                )},sizeof(Button)
+            );
+        
+            CStr_Free(&name);
+            FileChooser_Free(&fc);
+        }
     }
     if(CStr_Cmp(selected->text,"save")){
         if(fileinBuffer){
