@@ -138,6 +138,7 @@ void EDisplay_Free(EDisplay* d){
 #include "/home/codeleaded/System/Static/Library/MenuSystem.h"
 
 #define FILE_WIDTH              150
+#define FILE_OTHERRENDERS       1
 
 #define FILE_SYNTAX_C           "/home/codeleaded/System/SyntaxFiles/C_Syntax.alxon"
 #define FILE_SYNTAX_CPP         "/home/codeleaded/System/SyntaxFiles/Cpp_Syntax.alxon"
@@ -158,15 +159,15 @@ CStr fileinBuffer;
 CVector filesOpen;
 
 Editor* IDE_GetText(){
-    Node* selected = scene.First->Next->Next;
+    Node* selected = scene.First;
     return (Editor*)selected->Memory;
 }
 
 void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
+    const int index = (int)((b->renderable.rect.p.x + 1.0f - 10.0f) / FILE_WIDTH);
+    CStr path = *(CStr*)CVector_Get(&filesOpen,index);
+    
     if(e->ButtonId == ALX_MOUSE_L && e->eid == EVENT_PRESSED){
-        const int index = (int)((b->renderable.rect.p.x + 1.0f - 10.0f) / FILE_WIDTH);
-        CStr path = *(CStr*)CVector_Get(&filesOpen,index);
-        
         Editor* tb = IDE_GetText();
         if(tb){
             CStr content = Files_ReadT(path);
@@ -187,6 +188,18 @@ void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
                 else                                                    Editor_Syntax(tb,NULL);
                 
                 CStr_Free(&type);
+            }else{
+                printf("[IDE]: File -> %s(%d) not found!\n",path,index);
+            }
+        }
+    }
+    if(e->ButtonId == ALX_MOUSE_R && e->eid == EVENT_PRESSED){
+        Editor* tb = IDE_GetText();
+        if(tb){
+            CStr content = Files_ReadT(path);
+            if(content){
+                CVector_Remove(&filesOpen,index);
+                Scene_RemoveQueue(&scene,b);
             }else{
                 printf("[IDE]: File -> %s(%d) not found!\n",path,index);
             }
@@ -370,7 +383,7 @@ void Update(AlxWindow* w){
                 printf("Choosen: '%s'\n",fileinBuffer);
             
                 CStr name = Files_NameFull(fileinBuffer);
-                const int count = scene.size - 1;
+                const int count = scene.size - FILE_OTHERRENDERS;
                 Scene_Add(&scene,(Button[]){ Button_New(
                     NULL,
                     name,
