@@ -138,6 +138,7 @@ void EDisplay_Free(EDisplay* d){
 #include "/home/codeleaded/System/Static/Library/MenuSystem.h"
 
 #define FILE_WIDTH              150
+#define FILE_PADDINGX           10
 #define FILE_OTHERRENDERS       1
 
 #define FILE_SYNTAX_C           "/home/codeleaded/System/SyntaxFiles/C_Syntax.alxon"
@@ -340,6 +341,7 @@ void Setup(AlxWindow* w){
     Component_Scene_Event_R(&cg,&scene,Std_EventHandler);
 
     menu = MenuSystem_New(
+        AlxFont_MAKE_HIGH(16,32),
 		"./assets/Pointer.png",
 		"./assets/Fold.png",
 		"./assets/FoldUp.png",
@@ -405,7 +407,7 @@ void Update(AlxWindow* w){
                     (void(*)(void*,Label*,LabelEvent*))Button_File_EventHandler,
                     AlxFont_MAKE_HIGH(8,16),
                     (Vec2){ 8,16 },
-                    (Rect){ 10.0f + count * FILE_WIDTH,0.0f,FILE_WIDTH,20.0f },
+                    (Rect){ 10.0f + count * FILE_WIDTH,0.0f,FILE_WIDTH - FILE_PADDINGX,20.0f },
                     ALIGN_BORDER,
                     0xFF444444,
                     0xFFFFFFFF
