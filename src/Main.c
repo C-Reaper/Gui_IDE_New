@@ -196,13 +196,13 @@ void Button_File_EventHandler(void* parent,Button* b,ButtonEvent* e){
     if(e->ButtonId == ALX_MOUSE_R && e->eid == EVENT_PRESSED){
         Editor* tb = IDE_GetText();
         if(tb){
-            CStr content = Files_ReadT(path);
-            if(content){
-                CVector_Remove(&filesOpen,index);
-                Scene_RemoveQueue(&scene,b);
-            }else{
-                printf("[IDE]: File -> %s(%d) not found!\n",path,index);
+            if(fileinBuffer){
+                Editor* tb = IDE_GetText();
+                if(tb) Files_WriteT(fileinBuffer,tb->In.Buffer.Memory,tb->In.Buffer.size);
             }
+
+            CVector_Remove(&filesOpen,index);
+            Scene_RemoveQueue(&scene,b);
         }
     }
 }
@@ -364,9 +364,16 @@ void Update(AlxWindow* w){
         else                        MenuSystem_Clear(&menu);
     }
 
-    if(menu.trace.size == 0)
+    if(menu.trace.size == 0){
         Scene_Update(&scene,window.Strokes,GetMouse(),GetMouseBefore());
-    else{
+
+        Node* n = scene.First->Next;
+        for(int i = FILE_OTHERRENDERS;i<scene.size;i++){
+            Renderable* rend = (Renderable*)n->Memory;
+            rend->rect.p.x = 10.0f + (i - FILE_OTHERRENDERS) * FILE_WIDTH;
+            n = n->Next;
+        }
+    }else{
         if(Stroke(ALX_KEY_ENTER).PRESSED){
 	    	selected = MenuSystem_Select(&menu);
             
