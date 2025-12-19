@@ -331,6 +331,11 @@ void Update(AlxWindow* w){
     //MenuSystem_Render(WINDOW_STD_ARGS,&menu);
 	MMenuSystem_Render(WINDOW_STD_ARGS,&menu);
 }
+void Resize(AlxWindow* w){
+	Editor* e = IDE_GetText();
+    e->renderable.rect.d.x = (float)(GetWidth() - e->renderable.rect.p.x) * 0.99f;
+    e->renderable.rect.d.y = (float)(GetHeight() - e->renderable.rect.p.y) * 0.99f;
+}
 void Delete(AlxWindow* w){
 	Scene_Free(&scene);
     Component_Free(&cg);
@@ -342,7 +347,7 @@ void Delete(AlxWindow* w){
 }
 
 int main(int argc,char** argv){
-    if(Create("IDE - New",1900,1000,1,1,Setup,Update,Delete))
+    if(CreateX("IDE - New",1900,1000,1,1,Setup,Update,Delete,Resize))
         Start();
     return 0;
 }
