@@ -111,8 +111,8 @@ void EDisplay_Render(unsigned int* Target,int Target_Width,int Target_Height,EDi
     if(e->IntellisenseOpen){
         int CurserX = Input_CurserX(&e->Field.In,e->Field.In.Curser);
         int CurserY = Input_CurserY(&e->Field.In,e->Field.In.Curser);
-        int posx = e->Field.r.p.x+(CurserX + e->Field.ScrollX) *  e->Field.AlxFont.CharSizeX - e->Field.AlxFont.CharSizeX;
-        int posy = e->Field.r.p.y+(CurserY + e->Field.ScrollY) * (e->Field.AlxFont.CharSizeY * INPUT_GAP_FAKTOR) + e->Field.AlxFont.CharSizeY;
+        int posx = e->Field.r.p.x+(CurserX + e->Field.ScrollX) *  e->Field.font.CharSizeX - e->Field.font.CharSizeX;
+        int posy = e->Field.r.p.y+(CurserY + e->Field.ScrollY) * (e->Field.font.CharSizeY * INPUT_GAP_FAKTOR) + e->Field.font.CharSizeY;
         int boxw = 100;
         int boxh = 100;
         
